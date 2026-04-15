@@ -12,6 +12,7 @@ class IrisInput(BaseModel):
 def health():
     return {"status": "healthy"}
 
+
 @app.post("/predict")
 def predict(input_data: IrisInput):
     prediction = model.predict([input_data.data])
