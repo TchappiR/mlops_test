@@ -38,6 +38,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Convert repository owner to lowercase
+        run: echo "REPO_OWNER_LOWER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -52,5 +55,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ lower(github.repository_owner) }}/mlops-iris:latest
-            ghcr.io/${{ lower(github.repository_owner) }}/mlops-iris:${{ github.sha }}
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/mlops-iris:latest
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/mlops-iris:${{ github.sha }}
