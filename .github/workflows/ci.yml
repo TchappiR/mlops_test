@@ -2,12 +2,12 @@ name: CI Pipeline MLOps
 
 on:
   push:
-    branches: 
-      - 'feature/*'    # Déclenchement sur les branches feature [cite: 41]
-      - 'develop'      # Déclenchement sur la branche develop [cite: 45]
+    branches:
+      - 'feature/*'
+      - 'develop'
 
 jobs:
-  # JOB 1 : Toujours exécuté (Entraînement)
+  # STAGE 1 : Entraînement (Exécuté pour feature/* et develop)
   train:
     runs-on: ubuntu-latest
     steps:
@@ -19,41 +19,37 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies 
-        run: |
-          pip install scikit-learn joblib
-          
+      - name: Install dependencies
+        run: pip install scikit-learn joblib fastapi uvicorn
+
       - name: Train model
         run: python app/training_model.py
 
-  # JOB 2 : Uniquement pour la branche develop (Build & Publish Docker)
+  # STAGE 2 : Docker (Uniquement pour develop)
   docker-workflow:
     needs: train
-    if: github.ref == 'refs/heads/develop' # Condition pour la branche develop [cite: 45]
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    permissions: # Obligatoire pour écrire dans GitHub Packages
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # STEP 1 : Construction de l'image Docker 
+      # STEP 1 : Construction
       - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: false # On ne pousse pas encore
-          load: true  # Charge l'image dans le démon Docker local pour test
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mlops-iris:latest
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/mlops-iris:latest .
 
-      # STEP 2 : Publication de l'image Docker 
+      # STEP 2 : Publication
       - name: Publish Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true  # On pousse vers le registre 
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mlops-iris:latest
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/mlops-iris:latest
