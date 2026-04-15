@@ -2,9 +2,9 @@ name: CI Pipeline MLOps
 
 on:
   push:
-    branches: 
-      - 'feature/*'    # Déclenchement sur les branches feature [cite: 41]
-      - 'develop'      # Déclenchement sur la branche develop [cite: 45]
+    branches:
+      - 'feature/*'
+      - 'develop'
 
 jobs:
   # JOB 1 : Toujours exécuté (Entraînement)
@@ -29,7 +29,7 @@ jobs:
   # JOB 2 : Uniquement pour la branche develop (Build & Publish Docker)
   docker-workflow:
     needs: train
-    if: github.ref == 'refs/heads/develop' # Condition pour la branche develop [cite: 45]
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,5 +52,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/mlops-iris:latest
-            ghcr.io/${{ toLower(github.repository_owner) }}/mlops-iris:${{ github.sha }}
+            ghcr.io/${{ lower(github.repository_owner) }}/mlops-iris:latest
+            ghcr.io/${{ lower(github.repository_owner) }}/mlops-iris:${{ github.sha }}
