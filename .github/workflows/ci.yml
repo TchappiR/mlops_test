@@ -52,5 +52,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/mlops-iris:latest
-            ghcr.io/${{ github.repository_owner }}/mlops-iris:${{ github.sha }}
+            ghcr.io/${{ toLower(github.repository_owner) }}/mlops-iris:latest
+            ghcr.io/${{ toLower(github.repository_owner) }}/mlops-iris:${{ github.sha }}
